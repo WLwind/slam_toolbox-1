@@ -5584,6 +5584,25 @@ public:
     }
 
   /**
+   * @brief Computes the pose of the robot if the sensor were at the given pose
+   * @param sPose sensor pose
+   * @return robot pose
+   */
+  inline Pose2 GetCorrectedAt(const Pose2& sPose) const
+  {
+    Pose2 deviceOffsetPose2 = GetLaserRangeFinder()->GetOffsetPose();
+    kt_double offsetLength = deviceOffsetPose2.GetPosition().Length();
+    kt_double offsetHeading = deviceOffsetPose2.GetHeading();
+    kt_double angleoffset = atan2(deviceOffsetPose2.GetY(), deviceOffsetPose2.GetX());
+    kt_double correctedHeading = math::NormalizeAngle(sPose.GetHeading());
+    Pose2 worldSensorOffset = Pose2(offsetLength * cos(correctedHeading + angleoffset - offsetHeading),
+                                    offsetLength * sin(correctedHeading + angleoffset - offsetHeading),
+                                    offsetHeading);
+
+    return sPose - worldSensorOffset;
+  }
+
+  /**
    * Gets the bounding box of this scan
    * @return bounding box of this scan
    */
